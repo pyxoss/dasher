@@ -4,14 +4,34 @@
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/c-mart/dark-tango-skeleton/master/dark-tango-skeleton.css">
     <script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
     <script src="/data.js"></script>
+    <!-- MenuMaker Plugin -->
+    <script src="https://s3.amazonaws.com/menumaker/menumaker.min.js"></script>
+
+    <!-- Icon Library -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
 
 </head>
 
 <body class="container">
+    <div id="cssmenu"><div id="menu-button">Menu</div>
+  <ul>
+     <li><a href="#" target="_blank"><i class="fa fa-fw fa-home"></i> Home</a></li>
+     <li class="has-sub"><span class="submenu-button"></span><a href="#"><i class="fa fa-fw fa-bars"></i> Browse Data</a>
+        <ul>
+           <li class="has-sub"><span class="submenu-button"></span><a href="#">By User</a>
+              <ul class="menu-by-user">
+              </ul>
+           </li>
+           <li><a href="#">User Table</a></li>
+        </ul>
+     </li>
+  </ul>
+</div>
     <h1>First-Glance Report</h1>
     <hr>
     <h2>Global Performance By Module</h2>
@@ -58,17 +78,33 @@
 </style>
 
 <script type="text/javascript">
-    window.onload = function () {
+    realData = data;
+    var hash = location.hash.substr(1);
+    if (hash.split("")[0] == "s") {
+        data = data.userByName(hash.substr(1));
+    }
+
+    //Setup UI
+    realData.users.forEach(function (user){
+        $(".menu-by-user").append(`<li><a href="#">${user.name}</a></li>`)
+    })
+
+    generate(realData)
+    function generate(dataSet) {
+
         var tright = 0;
         var twrong = 0;
-        data.modules.forEach(function (module, mindex) {
+        dataSet.modules.forEach(function (module, mindex) {
             tright += module.right;
             twrong += module.wrong;
             $(".bymodule").append(("<div class='four columns'><div class='chart' id='chartContainer" + mindex + "'></div></div>"))
             new CanvasJS.Chart("chartContainer" + mindex, {
                 theme: "theme1",//theme1
+                backgroundColor: "#2e3436",
+                text: "#fff",
                 title: {
-                    text: "Module " + module.name + "; Total: " + module.total + "; Grade %: " + Math.round(module.grade * 100)
+                    text: "Module " + module.name + "; Total: " + module.total + "; Grade %: " + Math.round(module.grade * 100),
+                    fontColor: "#d3d7cf"
                 },
                 animationEnabled: true,   // change to true
                 data: [
@@ -87,8 +123,10 @@
         $(".bymodule").append(("<div class='four columns'><div class='chart' id='chartContainert'></div></div>"))
         new CanvasJS.Chart("chartContainert", {
             theme: "theme1",//theme1
+            backgroundColor: "#2e3436",
             title: {
                 text: "Module " + "Overall" + "; Total: " + (tright + twrong) + "; Grade %: " + Math.round(tright / (tright + twrong) * 100)
+                , fontColor: "#d3d7cf"
             },
             animationEnabled: true,   // change to true
             data: [
@@ -103,27 +141,375 @@
             ]
         }).render();
 
-    }
 
-    data.modules.forEach(function (module) {
-        module.questions.forEach(function (question) {
-            if (question.grade < 0.6 && question.total > 20) {
-                $(".failedq").append(`<li>Failing question: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}%</li>`);
-            }
-            if (question.grade > 0.9 && question.total > 20) {
-                $(".passq").append(`<li>Acing: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}%</li>`);
-            }
+
+        dataSet.modules.forEach(function (module) {
+            module.questions.forEach(function (question) {
+                if (question.grade < 0.6 && question.total > 5) {
+                    $(".failedq").append(`<li>Failing question: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}% (Based on ${question.total} results)</li>`);
+                }
+                if (question.grade > 0.8 && question.total > 5) {
+                    $(".passq").append(`<li>Acing: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}% (Based on ${question.total} results)</li>`);
+                }
+            })
         })
-    })
 
-    data.users.forEach(function (user) {
+        realData.users.forEach(function (user) {
             if (user.grade < 0.6 && user.total > 20) {
-                $(".faileds").append(`<li>Failing user: <u>${user.name}</u> with ${Math.round(user.grade * 100)}%</li>`);
+                $(".faileds").append(`<li>Failing user: <u>${user.name}</u> with ${Math.round(user.grade * 100)}% (Based on ${user.total} results)</li>`);
             }
             if (user.grade > 0.9 && user.total > 20) {
-                $(".passs").append(`<li>High-performer: <u>${user.name}</u> with ${Math.round(user.grade * 100)}%</li>`);
+                $(".passs").append(`<li>High-performer: <u>${user.name}</u> with ${Math.round(user.grade * 100)}% (Based on ${user.total} results)</li>`);
             }
         })
-</script>
+    }
 
+</script>
+<style type="text/css" class="ng-binding ng-scope">@import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
+#cssmenu,
+#cssmenu ul,
+#cssmenu ul li,
+#cssmenu ul li a,
+#cssmenu #menu-button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  list-style: none;
+  line-height: 1;
+  display: block;
+  position: relative;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  z-index: 999;
+}
+#cssmenu:after,
+#cssmenu > ul:after {
+  content: ".";
+  display: block;
+  clear: both;
+  visibility: hidden;
+  line-height: 0;
+  height: 0;
+}
+#cssmenu #menu-button {
+  display: none;
+}
+#cssmenu {
+  font-family: Montserrat, sans-serif;
+  background: #2e3436;
+}
+#cssmenu > ul > li {
+  float: left;
+}
+#cssmenu.align-center > ul {
+  font-size: 0;
+  text-align: center;
+}
+#cssmenu.align-center > ul > li {
+  display: inline-block;
+}
+#cssmenu.align-center ul ul {
+  text-align: left;
+}
+#cssmenu.align-right > ul > li {
+  float: right;
+}
+#cssmenu > ul > li > a {
+  padding: 17px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: #dddddd;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+#cssmenu > ul > li:hover > a {
+  color: #ffffff;
+}
+#cssmenu > ul > li.has-sub > a {
+  padding-right: 30px;
+}
+#cssmenu > ul > li.has-sub > a:after {
+  position: absolute;
+  top: 22px;
+  right: 11px;
+  width: 8px;
+  height: 2px;
+  display: block;
+  background: #dddddd;
+  content: '';
+}
+#cssmenu > ul > li.has-sub > a:before {
+  position: absolute;
+  top: 19px;
+  right: 14px;
+  display: block;
+  width: 2px;
+  height: 8px;
+  background: #dddddd;
+  content: '';
+  -webkit-transition: all .25s ease;
+  -moz-transition: all .25s ease;
+  -ms-transition: all .25s ease;
+  -o-transition: all .25s ease;
+  transition: all .25s ease;
+}
+#cssmenu > ul > li.has-sub:hover > a:before {
+  top: 23px;
+  height: 0;
+}
+#cssmenu ul ul {
+  position: absolute;
+  left: -9999px;
+}
+#cssmenu.align-right ul ul {
+  text-align: right;
+}
+#cssmenu ul ul li {
+  height: 0;
+  -webkit-transition: all .25s ease;
+  -moz-transition: all .25s ease;
+  -ms-transition: all .25s ease;
+  -o-transition: all .25s ease;
+  transition: all .25s ease;
+}
+#cssmenu li:hover > ul {
+  left: auto;
+}
+#cssmenu.align-right li:hover > ul {
+  left: auto;
+  right: 0;
+}
+#cssmenu li:hover > ul > li {
+  height: 35px;
+}
+#cssmenu ul ul ul {
+  margin-left: 100%;
+  top: 0;
+}
+#cssmenu.align-right ul ul ul {
+  margin-left: 0;
+  margin-right: 100%;
+}
+#cssmenu ul ul li a {
+  border-bottom: 1px solid rgba(150, 150, 150, 0.15);
+  padding: 11px 15px;
+  width: 170px;
+  font-size: 12px;
+  text-decoration: none;
+  color: #dddddd;
+  font-weight: 400;
+  background: #2e3436;
+}
+#cssmenu ul ul li:last-child > a,
+#cssmenu ul ul li.last-item > a {
+  border-bottom: 0;
+}
+#cssmenu ul ul li:hover > a,
+#cssmenu ul ul li a:hover {
+  color: #ffffff;
+}
+#cssmenu ul ul li.has-sub > a:after {
+  position: absolute;
+  top: 16px;
+  right: 11px;
+  width: 8px;
+  height: 2px;
+  display: block;
+  background: #dddddd;
+  content: '';
+}
+#cssmenu.align-right ul ul li.has-sub > a:after {
+  right: auto;
+  left: 11px;
+}
+#cssmenu ul ul li.has-sub > a:before {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  display: block;
+  width: 2px;
+  height: 8px;
+  background: #dddddd;
+  content: '';
+  -webkit-transition: all .25s ease;
+  -moz-transition: all .25s ease;
+  -ms-transition: all .25s ease;
+  -o-transition: all .25s ease;
+  transition: all .25s ease;
+}
+#cssmenu.align-right ul ul li.has-sub > a:before {
+  right: auto;
+  left: 14px;
+}
+#cssmenu ul ul > li.has-sub:hover > a:before {
+  top: 17px;
+  height: 0;
+}
+#cssmenu.small-screen {
+  width: 100%;
+}
+#cssmenu.small-screen ul {
+  width: 100%;
+  display: none;
+}
+#cssmenu.small-screen.align-center > ul {
+  text-align: left;
+}
+#cssmenu.small-screen ul li {
+  width: 100%;
+  border-top: 1px solid rgba(120, 120, 120, 0.2);
+}
+#cssmenu.small-screen ul ul li,
+#cssmenu.small-screen li:hover > ul > li {
+  height: auto;
+}
+#cssmenu.small-screen ul li a,
+#cssmenu.small-screen ul ul li a {
+  width: 100%;
+  border-bottom: 0;
+}
+#cssmenu.small-screen > ul > li {
+  float: none;
+}
+#cssmenu.small-screen ul ul li a {
+  padding-left: 25px;
+}
+#cssmenu.small-screen ul ul ul li a {
+  padding-left: 35px;
+}
+#cssmenu.small-screen ul ul li a {
+  color: #dddddd;
+  background: none;
+}
+#cssmenu.small-screen ul ul li:hover > a,
+#cssmenu.small-screen ul ul li.active > a {
+  color: #ffffff;
+}
+#cssmenu.small-screen ul ul,
+#cssmenu.small-screen ul ul ul,
+#cssmenu.small-screen.align-right ul ul {
+  position: relative;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+#cssmenu.small-screen > ul > li.has-sub > a:after,
+#cssmenu.small-screen > ul > li.has-sub > a:before,
+#cssmenu.small-screen ul ul > li.has-sub > a:after,
+#cssmenu.small-screen ul ul > li.has-sub > a:before {
+  display: none;
+}
+#cssmenu.small-screen #menu-button {
+  display: block;
+  padding: 17px;
+  color: #dddddd;
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+#cssmenu.small-screen #menu-button:after {
+  position: absolute;
+  top: 22px;
+  right: 17px;
+  display: block;
+  height: 4px;
+  width: 20px;
+  border-top: 2px solid #dddddd;
+  border-bottom: 2px solid #dddddd;
+  content: '';
+  box-sizing: content-box;
+}
+#cssmenu.small-screen #menu-button:before {
+  position: absolute;
+  top: 16px;
+  right: 17px;
+  display: block;
+  height: 2px;
+  width: 20px;
+  background: #dddddd;
+  content: '';
+  box-sizing: content-box;
+}
+#cssmenu.small-screen #menu-button.menu-opened:after {
+  top: 23px;
+  border: 0;
+  height: 2px;
+  width: 15px;
+  background: #ffffff;
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+#cssmenu.small-screen #menu-button.menu-opened:before {
+  top: 23px;
+  background: #ffffff;
+  width: 15px;
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+#cssmenu.small-screen .submenu-button {
+  position: absolute;
+  z-index: 99;
+  right: 0;
+  top: 0;
+  display: block;
+  border-left: 1px solid rgba(120, 120, 120, 0.2);
+  height: 46px;
+  width: 46px;
+  cursor: pointer;
+}
+#cssmenu.small-screen .submenu-button.submenu-opened {
+  background: #222728;
+}
+#cssmenu.small-screen ul ul .submenu-button {
+  height: 34px;
+  width: 34px;
+}
+#cssmenu.small-screen .submenu-button:after {
+  position: absolute;
+  top: 22px;
+  right: 19px;
+  width: 8px;
+  height: 2px;
+  display: block;
+  background: #dddddd;
+  content: '';
+}
+#cssmenu.small-screen ul ul .submenu-button:after {
+  top: 15px;
+  right: 13px;
+}
+#cssmenu.small-screen .submenu-button.submenu-opened:after {
+  background: #ffffff;
+}
+#cssmenu.small-screen .submenu-button:before {
+  position: absolute;
+  top: 19px;
+  right: 22px;
+  display: block;
+  width: 2px;
+  height: 8px;
+  background: #dddddd;
+  content: '';
+}
+#cssmenu.small-screen ul ul .submenu-button:before {
+  top: 12px;
+  right: 16px;
+}
+#cssmenu.small-screen .submenu-button.submenu-opened:before {
+  display: none;
+}
+#cssmenu.small-screen.select-list {
+  padding: 5px;
+}
+</style>
 </html>
