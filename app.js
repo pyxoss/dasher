@@ -64,25 +64,25 @@ function main() {
   app.listen(3000)
 }
 
-db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  where user != "vknyazev" and user != "vbellemare" group by `set`', function (err, rows) {
+db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  group by `set`', function (err, rows) {
   var modules = [];
   rows.forEach(function (v, i, a) {
-    modules.push({ name: v[0], total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+    modules.push({ name: v[0], total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
   });
 
   data.modules = modules;
   data.modules.forEach(function (module, index) {
-    db.query('SELECT `qid`, count(qid), sum(pass) FROM quiz  where user != "vknyazev" and user != "vbellemare" and `set`=="' + module.name + '"group by `qid`', function (err, rows) {
+    db.query('SELECT `qid`, count(qid), sum(pass) FROM quiz  where `set`=="' + module.name + '"group by `qid`', function (err, rows) {
       var mquestions = [];
       rows.forEach(function (v, i, a) {
-        mquestions.push({ name: v[0], module: module.name, total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
-        data.questions.push({ name: v[0], module: module.name, total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+        mquestions.push({ name: v[0], module: module.name, total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
+        data.questions.push({ name: v[0], module: module.name, total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
       });
       data.modules[index].questions = mquestions;
-      db.query('SELECT `user`, count(qid), sum(pass) FROM quiz  where user != "vknyazev" and user != "vbellemare" group by `user`', function (err, rows) {
+      db.query('SELECT `user`, count(qid), sum(pass) FROM quiz  group by `user`', function (err, rows) {
         var users = [];
         rows.forEach(function (v, i, a) {
-          users.push({ name: v[0], total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+          users.push({ name: v[0], total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
         });
 
         data.users = users;
@@ -92,7 +92,7 @@ db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  where user != "vknyazev
           db.query('SELECT `qid`, count(qid), sum(pass) FROM quiz  where user `user`=="' + user.name + '"group by `qid`', function (err, rows) {
             var uquestions = [];
             rows.forEach(function (v, i, a) {
-              uquestions.push({ name: v[0], module: module.name, total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+              uquestions.push({ name: v[0], module: module.name, total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
             });
             data.users[index].questions = uquestions;*/
         if (index + 1 == modules.length) {
@@ -102,7 +102,7 @@ db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  where user != "vknyazev
             db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  where user == "' + user.name + '" group by `set`', function (err, rows) {
               var umodules = [];
               rows.forEach(function (v, i, a) {
-                umodules.push({ name: v[0], total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+                umodules.push({ name: v[0], total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
               });
 
               data.users[uindex].modules = umodules;
@@ -116,7 +116,7 @@ db.query('SELECT `set`, count(qid), sum(pass) FROM quiz  where user != "vknyazev
                 db.query('SELECT `qid`, count(qid), sum(pass) FROM quiz   where user == "' + user.name + '" and `set`=="' + module.name + '"group by `qid`', function (err, rows) {
                   var uquestions = [];
                   rows.forEach(function (v, i, a) {
-                    uquestions.push({ name: v[0], module: module.name, total: v[1], right: v[2], wrong: v[1] - v[2], grade: v[2] / v[1] });
+                    uquestions.push({ name: v[0], module: module.name, total: +v[1], right: +v[2], wrong: +v[1] - +v[2], grade: +v[2] / +v[1] });
                   });
                   data.users[uindex].modules[mindex].questions = uquestions;
 

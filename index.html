@@ -1,1 +1,129 @@
-<script src="/data.js"></script>
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="/data.js"></script>
+
+
+</head>
+
+<body class="container">
+    <h1>First-Glance Report</h1>
+    <hr>
+    <h2>Global Performance By Module</h2>
+    <div class="row bymodule">
+
+    </div>
+    <hr>
+    <h2>By Q performance</h2>
+    <div class="row">
+        <div class="one-half column">
+
+            <ul class="failedq">
+
+            </ul>
+        </div>
+        <div class="one-half column">
+
+            <ul class="passq">
+
+            </ul>
+        </div>
+    </div>
+    <hr>
+    <h2>By Student Performance</h2>
+    <div class="row">
+        <div class="one-half column">
+
+            <ul class="faileds">
+
+            </ul>
+        </div>
+        <div class="one-half column">
+
+            <ul class="passs">
+
+            </ul>
+        </div>
+    </div>
+</body>
+<style>
+    .chart {
+        height: 300px;
+    }
+</style>
+
+<script type="text/javascript">
+    window.onload = function () {
+        var tright = 0;
+        var twrong = 0;
+        data.modules.forEach(function (module, mindex) {
+            tright += module.right;
+            twrong += module.wrong;
+            $(".bymodule").append(("<div class='four columns'><div class='chart' id='chartContainer" + mindex + "'></div></div>"))
+            new CanvasJS.Chart("chartContainer" + mindex, {
+                theme: "theme1",//theme1
+                title: {
+                    text: "Module " + module.name + "; Total: " + module.total + "; Grade %: " + Math.round(module.grade * 100)
+                },
+                animationEnabled: true,   // change to true
+                data: [
+                    {
+                        // Change type to "bar", "area", "spline", "pie",etc.
+                        type: "doughnut",
+                        dataPoints: [
+                            { label: "Good Answers", y: module.right },
+                            { label: "Bad Answers", y: module.wrong },
+                        ]
+                    }
+                ]
+            }).render();
+
+        })
+        $(".bymodule").append(("<div class='four columns'><div class='chart' id='chartContainert'></div></div>"))
+        new CanvasJS.Chart("chartContainert", {
+            theme: "theme1",//theme1
+            title: {
+                text: "Module " + "Overall" + "; Total: " + (tright + twrong) + "; Grade %: " + Math.round(tright / (tright + twrong) * 100)
+            },
+            animationEnabled: true,   // change to true
+            data: [
+                {
+                    // Change type to "bar", "area", "spline", "pie",etc.
+                    type: "doughnut",
+                    dataPoints: [
+                        { label: "Good Answers", y: tright },
+                        { label: "Bad Answers", y: twrong },
+                    ]
+                }
+            ]
+        }).render();
+
+    }
+
+    data.modules.forEach(function (module) {
+        module.questions.forEach(function (question) {
+            if (question.grade < 0.6 && question.total > 20) {
+                $(".failedq").append(`<li>Failing question: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}%</li>`);
+            }
+            if (question.grade > 0.9 && question.total > 20) {
+                $(".passq").append(`<li>Acing: <a href="https://etudie.ca/${question.module}/q/${question.name}">${question.module}/${question.name}</a> with ${Math.round(question.grade * 100)}%</li>`);
+            }
+        })
+    })
+
+    data.users.forEach(function (user) {
+            if (user.grade < 0.6 && user.total > 20) {
+                $(".faileds").append(`<li>Failing user: <u>${user.name}</u> with ${Math.round(user.grade * 100)}%</li>`);
+            }
+            if (user.grade > 0.9 && user.total > 20) {
+                $(".passs").append(`<li>High-performer: <u>${user.name}</u> with ${Math.round(user.grade * 100)}%</li>`);
+            }
+        })
+</script>
+
+</html>
